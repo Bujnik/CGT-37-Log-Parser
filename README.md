@@ -30,4 +30,6 @@ The log file entries are not necessarily ordered by date: events could be logged
 __________________________________________________________
 My takeaways: <br>
 -> Working with helper class - coming up with idea to delegate part of the work outside given class<br>
--> Practice with parsing strings
+-> Practice with parsing strings <br>
+-> Working with queries, processing them <br>
+-> After half of the task I realized, that helper class could be just inner class for purpose of the task

@@ -1,16 +1,15 @@
 package main;
 
-import main.query.DateQuery;
-import main.query.EventQuery;
-import main.query.IPQuery;
-import main.query.UserQuery;
+import main.query.*;
 
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery {
+public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery, QLQuery {
     private Path logDir;
     private List<LogEntry> entries;
 
@@ -111,6 +110,21 @@ public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery {
         for (LogEntry entry : fitEntries) {
             //Check if status matches given status
             if (entry.getStatus().equals(status)) IPs.add(entry.getIp());
+        }
+        return IPs;
+    }
+    public Set<String> getIPsForStatus(Status status){
+        Set<String> IPs = new HashSet<>();
+        for (LogEntry entry : entries) {
+            if (entry.getStatus().equals(status)) IPs.add(entry.getIp());
+        }
+        return IPs;
+    }
+
+    private Set<String> getIPsForDate(Date parseDate) {
+        Set<String> IPs = new HashSet<>();
+        for (LogEntry entry : entries) {
+            if (entry.getDate().equals(parseDate)) IPs.add(entry.getIp());
         }
         return IPs;
     }
@@ -252,6 +266,30 @@ public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery {
         return users;
     }
 
+    private Set<String> getUsersForDate(Date parseDate) {
+        Set<String> users = new HashSet<>();
+        for (LogEntry entry : entries) {
+            if (entry.getDate().equals(parseDate)) users.add(entry.getUser());
+        }
+        return users;
+    }
+
+    private Set<String> getUsersForEvent(Event event) {
+        Set<String> users = new HashSet<>();
+        for (LogEntry entry : entries) {
+            if (entry.getEvent().equals(event)) users.add(entry.getUser());
+        }
+        return users;
+    }
+
+    private Set<String> getUsersForStatus(Status valueOf) {
+        Set<String> users = new HashSet<>();
+        for (LogEntry entry : entries) {
+            if (entry.getStatus().equals(valueOf)) users.add(entry.getUser());
+        }
+        return users;
+    }
+
     /**
      * DateQuery methods
      */
@@ -383,6 +421,44 @@ public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery {
         return dates;
     }
 
+    public Set<Date> getAllDates(){
+        Set<Date> dates = new HashSet<>();
+        for (LogEntry entry : entries) dates.add(entry.getDate());
+        return dates;
+    }
+
+    private Set<Date> getDatesForStatus(Status valueOf) {
+        Set<Date> dates = new HashSet<>();
+        for (LogEntry entry : entries) {
+            if (entry.getStatus().equals(valueOf)) dates.add(entry.getDate());
+        }
+        return dates;
+    }
+
+    private Set<Date> getDatesForEvent(Event valueOf) {
+        Set<Date> dates = new HashSet<>();
+        for (LogEntry entry : entries) {
+            if (entry.getEvent().equals(valueOf)) dates.add(entry.getDate());
+        }
+        return dates;
+    }
+
+    private Set<Date> getDatesForUser(String value1) {
+        Set<Date> dates = new HashSet<>();
+        for (LogEntry entry : entries) {
+            if (entry.getUser().equals(value1)) dates.add(entry.getDate());
+        }
+        return dates;
+    }
+
+    private Set<Date> getDatesForIP(String value1) {
+        Set<Date> dates = new HashSet<>();
+        for (LogEntry entry : entries) {
+            if (entry.getIp().equals(value1)) dates.add(entry.getDate());
+        }
+        return dates;
+    }
+
     /**
      * EventQuery methods
      */
@@ -506,5 +582,198 @@ public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery {
             }
         }
         return result;
+    }
+
+    private Set<Event> getEventsForStatus(Status value1) {
+        Set<Event> events = new HashSet<>();
+        for (LogEntry entry : entries) {
+            if (entry.getStatus().equals(value1)) events.add(entry.getEvent());
+        }
+        return events;
+    }
+
+    private Set<Event> getEventsForDate(Date parseDate) {
+        Set<Event> events = new HashSet<>();
+        for (LogEntry entry : entries) {
+            if (entry.getDate().equals(parseDate)) events.add(entry.getEvent());
+        }
+        return events;
+    }
+
+    /**
+     * StatusQuery
+     */
+
+    public Set<Status> getAllStatus(){
+        Set<Status> result = new HashSet<>();
+        for (LogEntry entry : entries) result.add(entry.getStatus());
+        return result;
+    }
+
+    private Set<Status> getAllStatusForEvent(Event valueOf) {
+        Set<Status> result = new HashSet<>();
+        for (LogEntry entry : entries) {
+            if (entry.getEvent().equals(valueOf)) result.add(entry.getStatus());
+        }
+        return result;
+    }
+
+    private Set<Status> getAllStatusForDate(Date parseDate) {
+        Set<Status> result = new HashSet<>();
+        for (LogEntry entry : entries) {
+            if (entry.getDate().equals(parseDate)) result.add(entry.getStatus());
+        }
+        return result;
+    }
+
+    private Set<Status> getAllStatusForUser(String value1) {
+        Set<Status> result = new HashSet<>();
+        for (LogEntry entry : entries) {
+            if (entry.getUser().equals(value1)) result.add(entry.getStatus());
+        }
+        return result;
+    }
+
+    private Set<Status> getAllStatusForIp(String value1) {
+        Set<Status> result = new HashSet<>();
+        for (LogEntry entry : entries) {
+            if (entry.getIp().equals(value1)) result.add(entry.getStatus());
+        }
+        return result;
+    }
+
+    /**
+     * QLQuery method
+     */
+
+    @Override
+    public Set<Object> execute(String query) {
+        Set<Object> result = new HashSet<>();
+        String[] queryArr = query.split(" ", 6);
+
+        if (queryArr.length < 6){
+            /**
+             * Default query
+             */
+            switch (query) {
+                case "get ip":
+                    result.addAll(getUniqueIPs(null, null));
+                    break;
+                case "get user":
+                    result.addAll(getAllUsers());
+                    break;
+                case "get date":
+                    result.addAll(getAllDates());
+                    break;
+                case "get event":
+                    result.addAll(getAllEvents(null, null));
+                    break;
+                case "get status":
+                    result.addAll(getAllStatus());
+                    break;
+                default:
+                    break;
+            }
+            return result;
+        }
+        String field1 = queryArr[1];
+        String field2 = queryArr[3];
+        String value1 = queryArr[5].replaceAll("\"","");
+
+        switch (field1) {
+            case "ip":
+                switch (field2) {
+                    case "user":
+                        result.addAll(getIPsForUser(value1, null, null));
+                        break;
+                    case "event":
+                        result.addAll(getIPsForEvent(Event.valueOf(value1), null, null));
+                        break;
+                    case "date":
+                        result.addAll(getIPsForDate(parseDate(value1)));
+                        break;
+                    case "status":
+                        result.addAll(getIPsForStatus(Status.valueOf(value1)));
+                        break;
+                }
+                break;
+            case "user":
+                switch (field2) {
+                    case "ip":
+                        result.addAll(getUsersForIP(value1, null, null));
+                        break;
+                    case "date":
+                        result.addAll(getUsersForDate(parseDate(value1)));
+                        break;
+                    case "event":
+                        result.addAll(getUsersForEvent(Event.valueOf(value1)));
+                        break;
+                    case "status":
+                        result.addAll(getUsersForStatus(Status.valueOf(value1)));
+                        break;
+                }
+                break;
+            case "date":
+                switch (field2) {
+                    case "ip":
+                        result.addAll(getDatesForIP(value1));
+                        break;
+                    case "user":
+                        result.addAll(getDatesForUser(value1));
+                        break;
+                    case "event":
+                        result.addAll(getDatesForEvent(Event.valueOf(value1)));
+                        break;
+                    case "status":
+                        result.addAll(getDatesForStatus(Status.valueOf(value1)));
+                        break;
+                }
+                break;
+            case "event":
+                switch (field2) {
+                    case "ip":
+                        result.addAll(getEventsForIP(value1, null, null));
+                        break;
+                    case "user":
+                        result.addAll(getEventsForUser(value1, null, null));
+                        break;
+                    case "date":
+                        result.addAll(getEventsForDate(parseDate(value1)));
+                        break;
+                    case "status":
+                        result.addAll(getEventsForStatus(Status.valueOf(value1)));
+                        break;
+                }
+                break;
+            case "status":
+                switch (field2) {
+                    case "ip":
+                        result.addAll(getAllStatusForIp(value1));
+                        break;
+                    case "user":
+                        result.addAll(getAllStatusForUser(value1));
+                        break;
+                    case "date":
+                        result.addAll(getAllStatusForDate(parseDate(value1)));
+                        break;
+                    case "event":
+                        result.addAll(getAllStatusForEvent(Event.valueOf(value1)));
+                        break;
+                }
+                break;
+        }
+        return result;
+    }
+
+    /**
+     * Util methods
+     */
+    private Date parseDate(String dateString) {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+        try {
+            return sdf.parse(dateString);
+        } catch (ParseException e) {
+            return null;
+        }
     }
 }
