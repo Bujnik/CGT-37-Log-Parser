@@ -1,5 +1,6 @@
 package main;
 
+import main.query.DateQuery;
 import main.query.IPQuery;
 import main.query.UserQuery;
 
@@ -8,7 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-public class LogParser implements IPQuery, UserQuery {
+public class LogParser implements IPQuery, UserQuery, DateQuery {
     private Path logDir;
     private List<LogEntry> entries;
 
@@ -248,5 +249,136 @@ public class LogParser implements IPQuery, UserQuery {
             }
         }
         return users;
+    }
+
+    /**
+     * DateQuery methods
+     */
+
+    @Override
+    public Set<Date> getDatesForUserAndEvent(String user, Event event, Date after, Date before) {
+        List<LogEntry> fitEntries = getEntriesByDate(after, before);
+        Set<Date> dates = new HashSet<>();
+        for (LogEntry entry : fitEntries) {
+            //Check for user match
+            if (entry.getUser().equals(user)) {
+                //Check for event match
+                if (entry.getEvent().equals(event)) dates.add(entry.getDate());
+            }
+        }
+        return dates;
+    }
+
+    @Override
+    public Set<Date> getDatesWhenSomethingFailed(Date after, Date before) {
+        List<LogEntry> fitEntries = getEntriesByDate(after, before);
+        Set<Date> dates = new HashSet<>();
+        for (LogEntry entry : fitEntries) {
+            //Check for Status.FAILED
+            if (entry.getStatus().equals(Status.FAILED)) dates.add(entry.getDate());
+        }
+        return dates;
+    }
+
+    @Override
+    public Set<Date> getDatesWhenErrorOccurred(Date after, Date before) {
+        List<LogEntry> fitEntries = getEntriesByDate(after, before);
+        Set<Date> dates = new HashSet<>();
+        for (LogEntry entry : fitEntries) {
+            //Check for Status.ERROR
+            if (entry.getStatus().equals(Status.ERROR)) dates.add(entry.getDate());
+        }
+        return dates;
+    }
+
+    @Override
+    public Date getDateWhenUserLoggedInFirstTime(String user, Date after, Date before) {
+        List<LogEntry> fitEntries = getEntriesByDate(after, before);
+        //We need to get THE EARLIEST date
+        List<Date> sortedDates = new ArrayList<>();
+        for (LogEntry entry : fitEntries) {
+            //Check for user
+            if (entry.getUser().equals(user)) {
+                //Check for Event.LOGIN
+                if (entry.getEvent().equals(Event.LOGIN)) sortedDates.add(entry.getDate());
+            }
+        }
+        if (!sortedDates.isEmpty()) {
+            Collections.sort(sortedDates);
+            return sortedDates.get(0);
+        }
+        return null;
+    }
+
+    @Override
+    public Date getDateWhenUserAttemptedTask(String user, int task, Date after, Date before) {
+        List<LogEntry> fitEntries = getEntriesByDate(after, before);
+        //We need to get THE EARLIEST date
+        List<Date> sortedDates = new ArrayList<>();
+        for (LogEntry entry : fitEntries) {
+            //Check for user
+            if (entry.getUser().equals(user)) {
+                //Check for Event.ATTEMPT_TASK
+                if (entry.getEvent().equals(Event.ATTEMPT_TASK)) {
+                    //Check for id
+                    if (entry.getTaskNumber() == task) sortedDates.add(entry.getDate());
+                }
+            }
+        }
+        if (!sortedDates.isEmpty()) {
+            Collections.sort(sortedDates);
+            return sortedDates.get(0);
+        }
+        return null;
+    }
+
+    @Override
+    public Date getDateWhenUserCompletedTask(String user, int task, Date after, Date before) {
+        List<LogEntry> fitEntries = getEntriesByDate(after, before);
+        //We need to get THE EARLIEST date
+        List<Date> sortedDates = new ArrayList<>();
+        for (LogEntry entry : fitEntries) {
+            //Check for user
+            if (entry.getUser().equals(user)) {
+                //Check for Event.COMPLETE_TASK
+                if (entry.getEvent().equals(Event.COMPLETE_TASK)) {
+                    //Check for id
+                    if (entry.getTaskNumber() == task) sortedDates.add(entry.getDate());
+                }
+            }
+        }
+        if (!sortedDates.isEmpty()) {
+            Collections.sort(sortedDates);
+            return sortedDates.get(0);
+        }
+        return null;
+    }
+
+    @Override
+    public Set<Date> getDatesWhenUserSentMessages(String user, Date after, Date before) {
+        List<LogEntry> fitEntries = getEntriesByDate(after, before);
+        Set<Date> dates = new HashSet<>();
+        for (LogEntry entry : fitEntries) {
+            //Check for user
+            if (entry.getUser().equals(user)) {
+                //Check for Event.SEND_MESSAGE
+                if (entry.getEvent().equals(Event.SEND_MESSAGE)) dates.add(entry.getDate());
+            }
+        }
+        return dates;
+    }
+
+    @Override
+    public Set<Date> getDatesWhenUserDownloadedPlugin(String user, Date after, Date before) {
+        List<LogEntry> fitEntries = getEntriesByDate(after, before);
+        Set<Date> dates = new HashSet<>();
+        for (LogEntry entry : fitEntries) {
+            //Check for user
+            if (entry.getUser().equals(user)) {
+                //Check for Event.DOWNLOAD_PLUGIN
+                if (entry.getEvent().equals(Event.DOWNLOAD_PLUGIN)) dates.add(entry.getDate());
+            }
+        }
+        return dates;
     }
 }

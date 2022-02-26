@@ -29,4 +29,5 @@ The log file entries are not necessarily ordered by date: events could be logged
 
 __________________________________________________________
 My takeaways: <br>
--> 
+-> Working with helper class - coming up with idea to delegate part of the work outside given class<br>
+-> Practice with parsing strings
