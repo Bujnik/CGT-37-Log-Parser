@@ -9,14 +9,14 @@ import java.util.List;
 
 /**
  * Helper class to LogParser, will split log entry into fields below
- * taskNumber -1 indicates no task number (only Event.ATTEMPT_TASK and Event.COMPLETE_TASK) have task numbers assigned
+ * taskNumber null indicates no task number (only Event.ATTEMPT_TASK and Event.COMPLETE_TASK) have task numbers assigned
  */
 public class LogEntry {
     private String ip;
     private String user;
     private Date date;
     private Event event;
-    private int taskNumber = -1;
+    private Integer taskNumber = null;
     private Status status;
 
     public String getIp() {

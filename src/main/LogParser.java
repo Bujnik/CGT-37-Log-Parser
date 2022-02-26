@@ -1,13 +1,14 @@
 package main;
 
 import main.query.IPQuery;
+import main.query.UserQuery;
 
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-public class LogParser implements IPQuery {
+public class LogParser implements IPQuery, UserQuery {
     private Path logDir;
     private List<LogEntry> entries;
 
@@ -58,6 +59,9 @@ public class LogParser implements IPQuery {
         return result;
     }
 
+    /**
+     * IPQuery methods
+     */
 
     @Override
     public int getNumberOfUniqueIPs(Date after, Date before) {
@@ -107,5 +111,142 @@ public class LogParser implements IPQuery {
             if (entry.getStatus().equals(status)) IPs.add(entry.getIp());
         }
         return IPs;
+    }
+
+    /**
+     * UserQuery methods
+     */
+
+    @Override
+    public Set<String> getAllUsers() {
+        Set<String> users = new HashSet<>();
+        for (LogEntry entry : entries) users.add(entry.getUser());
+        return users;
+    }
+
+    @Override
+    public int getNumberOfUsers(Date after, Date before) {
+        List<LogEntry> fitEntries = getEntriesByDate(after, before);
+        Set<String> users = new HashSet<>();
+        for (LogEntry entry : fitEntries) users.add(entry.getUser());
+        return users.size();
+    }
+
+    @Override
+    public int getNumberOfUserEvents(String user, Date after, Date before) {
+        List<LogEntry> fitEntries = getEntriesByDate(after, before);
+        //We need to count only unique events here
+        Set<Event> events = new HashSet<>();
+        for (LogEntry entry : fitEntries) {
+            //If user is assigned to given entry, increase the count
+            if (entry.getUser().equals(user)) events.add(entry.getEvent());
+        }
+        return events.size();
+    }
+
+    @Override
+    public Set<String> getUsersForIP(String ip, Date after, Date before) {
+        List<LogEntry> fitEntries = getEntriesByDate(after, before);
+        Set<String> users = new HashSet<>();
+        for (LogEntry entry : fitEntries) {
+            //If ip of given entry is equal to passed ip, add user to the set
+            if (entry.getIp().equals(ip)) users.add(entry.getUser());
+        }
+        return users;
+    }
+
+    @Override
+    public Set<String> getUsersWhoHaveLoggedIn(Date after, Date before) {
+        List<LogEntry> fitEntries = getEntriesByDate(after, before);
+        Set<String> users = new HashSet<>();
+        for (LogEntry entry : fitEntries) {
+            //Check for Event.LOGIN
+            if (entry.getEvent().equals(Event.LOGIN)) {
+                users.add(entry.getUser());
+            }
+        }
+        return users;
+    }
+
+    @Override
+    public Set<String> getUsersWhoHaveDownloadedPlugin(Date after, Date before) {
+        List<LogEntry> fitEntries = getEntriesByDate(after, before);
+        Set<String> users = new HashSet<>();
+        for (LogEntry entry : fitEntries) {
+            //Check for Event.DOWNLOAD_PLUGIN
+            if (entry.getEvent().equals(Event.DOWNLOAD_PLUGIN)) {
+                //Check for Status.OK
+                if (entry.getStatus().equals(Status.OK)) users.add(entry.getUser());
+            }
+        }
+        return users;
+    }
+
+    @Override
+    public Set<String> getUsersWhoHaveSentMessages(Date after, Date before) {
+        List<LogEntry> fitEntries = getEntriesByDate(after, before);
+        Set<String> users = new HashSet<>();
+        for (LogEntry entry : fitEntries) {
+            //Check for Event.SEND_MESSAGE
+            if (entry.getEvent().equals(Event.SEND_MESSAGE)) {
+                //Check for Status.OK
+                if (entry.getStatus().equals(Status.OK)) users.add(entry.getUser());
+            }
+        }
+        return users;
+    }
+
+    @Override
+    public Set<String> getUsersWhoHaveAttemptedTasks(Date after, Date before) {
+        List<LogEntry> fitEntries = getEntriesByDate(after, before);
+        Set<String> users = new HashSet<>();
+        for (LogEntry entry : fitEntries) {
+            //Check for Event.ATTEMPT_TASK
+            if (entry.getEvent().equals(Event.ATTEMPT_TASK)) {
+                users.add(entry.getUser());
+            }
+        }
+        return users;
+    }
+
+    @Override
+    public Set<String> getUsersWhoHaveAttemptedTasks(Date after, Date before, int task) {
+        List<LogEntry> fitEntries = getEntriesByDate(after, before);
+        Set<String> users = new HashSet<>();
+        for (LogEntry entry : fitEntries) {
+            //Check for Event.ATTEMPT_TASK
+            if (entry.getEvent().equals(Event.ATTEMPT_TASK)) {
+                //Check for task number
+                if (entry.getTaskNumber() == task) users.add(entry.getUser());
+            }
+        }
+        return users;
+    }
+
+    @Override
+    public Set<String> getUsersWhoHaveCompletedTasks(Date after, Date before) {
+        List<LogEntry> fitEntries = getEntriesByDate(after, before);
+        Set<String> users = new HashSet<>();
+        for (LogEntry entry : fitEntries) {
+            //Check for Event.COMPLETE_TASK
+            if (entry.getEvent().equals(Event.COMPLETE_TASK)) {
+                users.add(entry.getUser());
+            }
+        }
+        return users;
+    }
+
+    @Override
+    public Set<String> getUsersWhoHaveCompletedTasks(Date after, Date before, int task) {
+        List<LogEntry> fitEntries = getEntriesByDate(after, before);
+        Set<String> users = new HashSet<>();
+        for (LogEntry entry : fitEntries) {
+            //Check for Event.COMPLETE_TASK
+            if (entry.getEvent().equals(Event.COMPLETE_TASK)) {
+                //Check for task number
+                if (entry.getTaskNumber() == task) users.add(entry.getUser());
+            }
+        }
+        return users;
     }
 }
