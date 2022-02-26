@@ -28,8 +28,9 @@ Example of a line from a log file:<br>
 The log file entries are not necessarily ordered by date: events could be logged in a different order than they occur.<br>
 
 __________________________________________________________
-My takeaways: <br>
+Task completed. My takeaways: <br>
 -> Working with helper class - coming up with idea to delegate part of the work outside given class<br>
 -> Practice with parsing strings <br>
 -> Working with queries, processing them <br>
--> After half of the task I realized, that helper class could be just inner class for purpose of the task
+-> After half of the task I realized, that helper class could be just inner class for purpose of the task<br>
+-> Also, I need to learn more about Pattern and Matcher
