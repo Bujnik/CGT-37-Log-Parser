@@ -1,6 +1,7 @@
 package main;
 
 import main.query.DateQuery;
+import main.query.EventQuery;
 import main.query.IPQuery;
 import main.query.UserQuery;
 
@@ -9,7 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-public class LogParser implements IPQuery, UserQuery, DateQuery {
+public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery {
     private Path logDir;
     private List<LogEntry> entries;
 
@@ -380,5 +381,130 @@ public class LogParser implements IPQuery, UserQuery, DateQuery {
             }
         }
         return dates;
+    }
+
+    /**
+     * EventQuery methods
+     */
+
+    @Override
+    public int getNumberOfEvents(Date after, Date before) {
+        return getAllEvents(after, before).size();
+    }
+
+    @Override
+    public Set<Event> getAllEvents(Date after, Date before) {
+        List<LogEntry> fitEntries = getEntriesByDate(after, before);
+        Set<Event> events = new HashSet<>();
+        for (LogEntry entry : fitEntries) events.add(entry.getEvent());
+        return events;
+    }
+
+    @Override
+    public Set<Event> getEventsForIP(String ip, Date after, Date before) {
+        List<LogEntry> fitEntries = getEntriesByDate(after, before);
+        Set<Event> events = new HashSet<>();
+        for (LogEntry entry : fitEntries) {
+            //Check for IP
+            if (entry.getIp().equals(ip)) events.add(entry.getEvent());
+        }
+        return events;
+    }
+
+    @Override
+    public Set<Event> getEventsForUser(String user, Date after, Date before) {
+        List<LogEntry> fitEntries = getEntriesByDate(after, before);
+        Set<Event> events = new HashSet<>();
+        for (LogEntry entry : fitEntries) {
+            //Check for user
+            if (entry.getUser().equals(user)) events.add(entry.getEvent());
+        }
+        return events;
+    }
+
+    @Override
+    public Set<Event> getFailedEvents(Date after, Date before) {
+        List<LogEntry> fitEntries = getEntriesByDate(after, before);
+        Set<Event> events = new HashSet<>();
+        for (LogEntry entry : fitEntries) {
+            //Check for Status.FAILED
+            if (entry.getStatus().equals(Status.FAILED)) events.add(entry.getEvent());
+        }
+        return events;
+    }
+
+    @Override
+    public Set<Event> getErrorEvents(Date after, Date before) {
+        List<LogEntry> fitEntries = getEntriesByDate(after, before);
+        Set<Event> events = new HashSet<>();
+        for (LogEntry entry : fitEntries) {
+            //Check for Status.ERROR
+            if (entry.getStatus().equals(Status.ERROR)) events.add(entry.getEvent());
+        }
+        return events;
+    }
+
+    @Override
+    public int getNumberOfAttemptsToCompleteTask(int task, Date after, Date before) {
+        List<LogEntry> fitEntries = getEntriesByDate(after, before);
+        int count = 0;
+        for (LogEntry entry : fitEntries) {
+            //Check for Event.ATTEMPT_TASK
+            if (entry.getEvent().equals(Event.ATTEMPT_TASK)) {
+                //Check for task id
+                if (entry.getTaskNumber() == task) count++;
+            }
+        }
+        return count;
+    }
+
+    @Override
+    public int getNumberOfSuccessfulAttemptsToCompleteTask(int task, Date after, Date before) {
+        List<LogEntry> fitEntries = getEntriesByDate(after, before);
+        int count = 0;
+        for (LogEntry entry : fitEntries) {
+            //Check for Event.COMPLETE_TASK
+            if (entry.getEvent().equals(Event.COMPLETE_TASK)) {
+                //Check for task id
+                if (entry.getTaskNumber() == task) count++;
+            }
+        }
+        return count;
+    }
+
+    @Override
+    public Map<Integer, Integer> getAllAttemptedTasksAndNumberOfAttempts(Date after, Date before) {
+        List<LogEntry> fitEntries = getEntriesByDate(after, before);
+        Map<Integer, Integer> result = new HashMap<>();
+        for (LogEntry entry : fitEntries) {
+            //Check for Event.ATTEMPT_TASK
+            if (entry.getEvent().equals(Event.ATTEMPT_TASK)) {
+                //If map does not contain given ID, get number of attempts and put entry to the map
+                int id = entry.getTaskNumber();
+                if (!result.containsKey(id)) {
+                    int count = getNumberOfAttemptsToCompleteTask(id, after, before);
+                    result.put(id, count);
+                }
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public Map<Integer, Integer> getAllCompletedTasksAndNumberOfCompletions(Date after, Date before) {
+        List<LogEntry> fitEntries = getEntriesByDate(after, before);
+        Map<Integer, Integer> result = new HashMap<>();
+        for (LogEntry entry : fitEntries) {
+            //Check for Event.COMPLETE_TASK
+            if (entry.getEvent().equals(Event.COMPLETE_TASK)) {
+                //If map does not contain given ID, get number of attempts and put entry to the map
+                int id = entry.getTaskNumber();
+                if (!result.containsKey(id)) {
+                    int count = getNumberOfSuccessfulAttemptsToCompleteTask(id, after, before);
+                    result.put(id, count);
+                }
+            }
+        }
+        return result;
     }
 }
