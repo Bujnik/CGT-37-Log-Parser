@@ -12,16 +12,16 @@ ip is the IP address from which the user generated the event,<br>
 user is the username (one or more words separated by spaces),<br>
 date is the date of the event formatted as <day.month.year hour:minute:second>,<br>
 event is one of the following events:<br>
-LOGIN - a user logged in,<br>
-DOWNLOAD_PLUGIN - a user downloaded the plugin,<br>
-SEND_MESSAGE - a user sent a message,<br>
-ATTEMPT_TASK - a user attempted to complete a task,<br>
-COMPLETE_TASK - a user has completed a task.<br>
-The ATTEMPT_TASK and COMPLETE_TASK events have one additional parameter, separated from the others by a space: the task number.<br>
+<b>LOGIN</b> - a user logged in,<br>
+<b>DOWNLOAD_PLUGIN</b> - a user downloaded the plugin,<br>
+<b>SEND_MESSAGE</b> - a user sent a message,<br>
+<b>ATTEMPT_TASK</b> - a user attempted to complete a task,<br>
+<b>COMPLETE_TASK</b> - a user has completed a task.<br>
+The <b>ATTEMPT_TASK</b> and <b>COMPLETE_TASK</b> events have one additional parameter, separated from the others by a space: the task number.<br>
 status is one of the following event statuses:<br>
-OK - the event succeeded,<br>
-FAILED - the event failed,<br>
-ERROR - an error occurred.<br>
+<b>OK</b> - the event succeeded,<br>
+<b>FAILED</b> - the event failed,<br>
+<b>ERROR</b> - an error occurred.<br>
 
 Example of a line from a log file:<br>
 "146.34.15.5 Eduard Bentley 05.01.2021 20:22:55 COMPLETE_TASK 48 FAILED".<br>
